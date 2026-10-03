@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Stock')}"></head>
+<body>
+<aside th:replace="~{fragments/layout :: sidebar}"></aside>
+<main>
+    <h1>Stock Management</h1>
+    <div th:replace="~{fragments/layout :: alerts}"></div>
+
+    <div class="card">
+        <h2>Add / Remove Stock</h2>
+        <p class="muted">Enter a positive number to add stock (new purchase). Enter a negative number to remove (damaged / returned).</p>
+        <form th:action="@{/stock/update}" method="post">
+            <div class="form-grid">
+                <div>
+                    <label>Medicine *</label>
+                    <select name="medicineId" required>
+                        <option value="">-- Select medicine --</option>
+                        <option th:each="m : ${medicines}" th:value="${m.id}"
+                                th:text="${m.name} + ' (in stock: ' + ${m.quantity} + ')'"></option>
+                    </select>
+                </div>
+                <div>
+                    <label>Quantity (+ / -) *</label>
+                    <input type="number" name="quantity" required>
+                </div>
+                <div>
+                    <label>Supplier</label>
+                    <select name="supplierId">
+                        <option value="">-- None --</option>
+                        <option th:each="s : ${suppliers}" th:value="${s.id}" th:text="${s.name}"></option>
+                    </select>
+                </div>
+                <div>
+                    <label>Note</label>
+                    <input type="text" name="note" placeholder="e.g. Purchase invoice #123">
+                </div>
+            </div>
+            <button class="btn" type="submit" style="margin-top:16px">Update Stock</button>
+        </form>
+    </div>
+
+    <div class="grid grid-2">
+        <div class="card">
+            <h2>⚠ Low Stock</h2>
+            <p th:if="${#lists.isEmpty(lowStock)}" class="muted">Nothing is low on stock.</p>
+            <table th:unless="${#lists.isEmpty(lowStock)}">
+                <tr><th>Medicine</th><th class="right">Qty</th><th>Supplier</th></tr>
+                <tr th:each="m : ${lowStock}">
+                    <td th:text="${m.name}"></td>
+                    <td class="right"><span class="badge low" th:text="${m.quantity}"></span></td>
+                    <td th:text="${m.supplier != null} ? ${m.supplier.name} + ' (' + ${m.supplier.phone} + ')' : '-'"></td>
+                </tr>
+            </table>
+        </div>
+        <div class="card">
+            <h2>⏰ Expired / Expiring Soon</h2>
+            <p th:if="${#lists.isEmpty(expiring)}" class="muted">No medicines expiring in 30 days.</p>
+            <table th:unless="${#lists.isEmpty(expiring)}">
+                <tr><th>Medicine</th><th>Batch</th><th>Expiry</th></tr>
+                <tr th:each="m : ${expiring}">
+                    <td th:text="${m.name}"></td>
+                    <td th:text="${m.batchNumber}"></td>
+                    <td>
+                        <span th:text="${#temporals.format(m.expiryDate, 'dd-MM-yyyy')}"></span>
+                        <span th:if="${m.expired}" class="badge expired">Expired</span>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Recent Stock Movements</h2>
+        <p th:if="${#lists.isEmpty(history)}" class="muted">No stock updates yet.</p>
+        <table th:unless="${#lists.isEmpty(history)}">
+            <tr><th>Date</th><th>Medicine</th><th class="right">Change</th><th>Supplier</th><th>Note</th></tr>
+            <tr th:each="h : ${history}">
+                <td th:text="${#temporals.format(h.entryDate, 'dd-MM-yyyy HH:mm')}"></td>
+                <td th:text="${h.medicine.name}"></td>
+                <td class="right">
+                    <span th:class="${h.quantity > 0} ? 'badge ok' : 'badge expired'"
+                          th:text="${h.quantity > 0} ? '+' + ${h.quantity} : ${h.quantity}"></span>
+                </td>
+                <td th:text="${h.supplier != null} ? ${h.supplier.name} : '-'"></td>
+                <td th:text="${h.note}"></td>
+            </tr>
+        </table>
+    </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Billing')}"></head>
+<body>
+<aside th:replace="~{fragments/layout :: sidebar}"></aside>
+<main>
+    <h1>New Bill</h1>
+    <div th:replace="~{fragments/layout :: alerts}"></div>
+
+    <form th:action="@{/billing/create}" method="post" id="billForm">
+        <div class="card">
+            <h2>Customer</h2>
+            <div class="form-grid">
+                <div><label>Customer Name</label><input type="text" name="customerName" placeholder="Walk-in Customer"></div>
+                <div><label>Phone</label><input type="text" name="customerPhone"></div>
+                <div>
+                    <label>Payment Mode</label>
+                    <select name="paymentMode">
+                        <option>Cash</option><option>UPI</option><option>Card</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="page-head">
+                <h2>Medicines</h2>
+                <button type="button" class="btn btn-sm" onclick="addRow()">+ Add Item</button>
+            </div>
+            <table>
+                <thead>
+                <tr><th style="width:45%">Medicine</th><th class="right">Price</th><th class="right">Available</th><th style="width:110px">Qty</th><th class="right">Total</th><th></th></tr>
+                </thead>
+                <tbody id="items"></tbody>
+            </table>
+        </div>
+
+        <div class="card" style="max-width:420px; margin-left:auto">
+            <div class="summary-row"><span>Subtotal</span><span id="subTotal">₹0.00</span></div>
+            <div class="summary-row">
+                <span>Discount %</span>
+                <input type="number" name="discountPercent" id="discount" value="0" min="0" max="100" step="0.01" style="width:100px" oninput="recalc()">
+            </div>
+            <div class="summary-row">
+                <span>GST %</span>
+                <input type="number" name="gstPercent" id="gst" value="0" min="0" max="28" step="0.01" style="width:100px" oninput="recalc()">
+            </div>
+            <hr>
+            <div class="summary-row"><span><strong>Grand Total</strong></span><span class="bill-total" id="grandTotal">₹0.00</span></div>
+            <button class="btn" type="submit" style="width:100%; margin-top:12px">Generate Bill</button>
+        </div>
+    </form>
+
+    <!-- Hidden template for one bill row; JavaScript copies it when you click "+ Add Item" -->
+    <template id="rowTemplate">
+        <tr>
+            <td>
+                <select name="medicineId" required onchange="onMedicineChange(this)">
+                    <option value="">-- Select --</option>
+                    <option th:each="m : ${medicines}" th:value="${m.id}"
+                            th:attr="data-price=${m.price},data-stock=${m.quantity}"
+                            th:disabled="${m.expired}"
+                            th:text="${m.name} + (${m.expired} ? ' (EXPIRED)' : '')"></option>
+                </select>
+            </td>
+            <td class="right price">₹0.00</td>
+            <td class="right stock">-</td>
+            <td><input type="number" name="qty" value="1" min="1" required oninput="recalc()"></td>
+            <td class="right line">₹0.00</td>
+            <td><button type="button" class="btn btn-sm btn-danger" onclick="this.closest('tr').remove(); recalc();">✕</button></td>
+        </tr>
+    </template>
+
+    <script>
+        // Add a new empty row to the bill
+        function addRow() {
+            const row = document.getElementById('rowTemplate').content.cloneNode(true);
+            document.getElementById('items').appendChild(row);
+        }
+
+        // When a medicine is chosen, show its price and stock, and limit qty to stock
+        function onMedicineChange(select) {
+            const opt = select.selectedOptions[0];
+            const row = select.closest('tr');
+            const price = parseFloat(opt.dataset.price || 0);
+            const stock = parseInt(opt.dataset.stock || 0);
+            row.querySelector('.price').textContent = '₹' + price.toFixed(2);
+            row.querySelector('.stock').textContent = opt.value ? stock : '-';
+            row.querySelector('input[name=qty]').max = stock;
+            recalc();
+        }
+
+        // Recalculate all totals
+        function recalc() {
+            let sub = 0;
+            document.querySelectorAll('#items tr').forEach(row => {
+                const opt = row.querySelector('select').selectedOptions[0];
+                const price = parseFloat(opt.dataset.price || 0);
+                const qty = parseInt(row.querySelector('input[name=qty]').value || 0);
+                const line = price * qty;
+                row.querySelector('.line').textContent = '₹' + line.toFixed(2);
+                sub += line;
+            });
+            const disc = sub * (parseFloat(document.getElementById('discount').value) || 0) / 100;
+            const gst = (sub - disc) * (parseFloat(document.getElementById('gst').value) || 0) / 100;
+            document.getElementById('subTotal').textContent = '₹' + sub.toFixed(2);
+            document.getElementById('grandTotal').textContent = '₹' + (sub - disc + gst).toFixed(2);
+        }
+
+        // Stop submitting an empty bill
+        document.getElementById('billForm').addEventListener('submit', e => {
+            if (document.querySelectorAll('#items tr').length === 0) {
+                e.preventDefault();
+                alert('Please add at least one medicine.');
+            }
+        });
+
+        addRow();   // start with one row
+    </script>
+</main>
+</body>
+</html>

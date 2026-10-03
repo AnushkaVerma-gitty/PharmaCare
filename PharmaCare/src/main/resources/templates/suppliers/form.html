@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Supplier')}"></head>
+<body>
+<aside th:replace="~{fragments/layout :: sidebar}"></aside>
+<main>
+    <h1 th:text="${supplier.id == null} ? 'Add Supplier' : 'Edit Supplier'">Add Supplier</h1>
+    <div class="card">
+        <form th:action="@{/suppliers/save}" th:object="${supplier}" method="post">
+            <input type="hidden" th:field="*{id}">
+            <div class="form-grid">
+                <div>
+                    <label>Supplier Name *</label>
+                    <input type="text" th:field="*{name}">
+                    <div class="field-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+                </div>
+                <div><label>Contact Person</label><input type="text" th:field="*{contactPerson}"></div>
+                <div><label>Phone</label><input type="text" th:field="*{phone}"></div>
+                <div><label>Email</label><input type="email" th:field="*{email}"></div>
+                <div><label>Address</label><input type="text" th:field="*{address}"></div>
+                <div><label>GST Number</label><input type="text" th:field="*{gstNumber}"></div>
+            </div>
+            <div style="margin-top:20px" class="actions">
+                <button class="btn" type="submit">Save</button>
+                <a class="btn btn-secondary" th:href="@{/suppliers}">Cancel</a>
+            </div>
+        </form>
+    </div>
+</main>
+</body>
+</html>

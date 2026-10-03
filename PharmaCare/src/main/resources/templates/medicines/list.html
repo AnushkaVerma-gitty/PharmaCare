@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Medicines')}"></head>
+<body>
+<aside th:replace="~{fragments/layout :: sidebar}"></aside>
+<main>
+    <div class="page-head">
+        <h1>Medicines</h1>
+        <a class="btn" th:href="@{/medicines/new}">+ Add Medicine</a>
+    </div>
+    <div th:replace="~{fragments/layout :: alerts}"></div>
+
+    <div class="card">
+        <form class="inline-form" th:action="@{/medicines}" method="get">
+            <input type="text" name="keyword" th:value="${keyword}" placeholder="Search name, category, manufacturer, batch..." style="min-width:320px">
+            <button class="btn" type="submit">Search</button>
+            <a class="btn btn-secondary" th:href="@{/medicines}">Clear</a>
+        </form>
+    </div>
+
+    <div class="card">
+        <p th:if="${#lists.isEmpty(medicines)}" class="muted">No medicines found.</p>
+        <table th:unless="${#lists.isEmpty(medicines)}">
+            <tr>
+                <th>Name</th><th>Category</th><th>Manufacturer</th><th>Batch</th>
+                <th class="right">Price</th><th class="right">Stock</th><th>Expiry</th><th>Supplier</th><th>Actions</th>
+            </tr>
+            <tr th:each="m : ${medicines}">
+                <td><strong th:text="${m.name}"></strong></td>
+                <td th:text="${m.category}"></td>
+                <td th:text="${m.manufacturer}"></td>
+                <td th:text="${m.batchNumber}"></td>
+                <td class="right" th:text="'₹' + ${#numbers.formatDecimal(m.price, 1, 2)}"></td>
+                <td class="right">
+                    <span th:text="${m.quantity}"></span>
+                    <span th:if="${m.lowStock}" class="badge low">Low</span>
+                </td>
+                <td>
+                    <span th:text="${m.expiryDate != null} ? ${#temporals.format(m.expiryDate, 'dd-MM-yyyy')} : '-'"></span>
+                    <span th:if="${m.expired}" class="badge expired">Expired</span>
+                    <span th:if="${m.expiringSoon}" class="badge soon">Soon</span>
+                </td>
+                <td th:text="${m.supplier != null} ? ${m.supplier.name} : '-'"></td>
+                <td class="actions">
+                    <a class="btn btn-sm btn-secondary" th:href="@{/medicines/edit/{id}(id=${m.id})}">Edit</a>
+                    <form th:action="@{/medicines/delete/{id}(id=${m.id})}" method="post"
+                          onsubmit="return confirm('Delete this medicine?');">
+                        <button class="btn btn-sm btn-danger" type="submit">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        </table>
+    </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Dashboard')}"></head>
+<body>
+<aside th:replace="~{fragments/layout :: sidebar}"></aside>
+<main>
+    <h1>Dashboard</h1>
+
+    <div class="grid grid-4">
+        <div class="card stat"><div class="label">Total Medicines</div><div class="value" th:text="${totalMedicines}">0</div></div>
+        <div class="card stat"><div class="label">Suppliers</div><div class="value" th:text="${totalSuppliers}">0</div></div>
+        <div class="card stat"><div class="label">Bills Today</div><div class="value" th:text="${todaySalesCount}">0</div></div>
+        <div class="card stat"><div class="label">Revenue Today</div><div class="value" th:text="'₹' + ${#numbers.formatDecimal(todayRevenue, 1, 'COMMA', 2, 'POINT')}">₹0</div></div>
+    </div>
+
+    <div class="grid grid-2">
+        <div class="card">
+            <h2>⚠ Low Stock</h2>
+            <p th:if="${#lists.isEmpty(lowStock)}" class="muted">All medicines are well stocked.</p>
+            <table th:unless="${#lists.isEmpty(lowStock)}">
+                <tr><th>Medicine</th><th class="right">Qty</th><th class="right">Reorder at</th></tr>
+                <tr th:each="m : ${lowStock}">
+                    <td th:text="${m.name}"></td>
+                    <td class="right"><span class="badge low" th:text="${m.quantity}"></span></td>
+                    <td class="right" th:text="${m.reorderLevel}"></td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>⏰ Expired / Expiring in 30 days</h2>
+            <p th:if="${#lists.isEmpty(expiring)}" class="muted">No medicines expiring soon.</p>
+            <table th:unless="${#lists.isEmpty(expiring)}">
+                <tr><th>Medicine</th><th>Expiry</th><th>Status</th></tr>
+                <tr th:each="m : ${expiring}">
+                    <td th:text="${m.name}"></td>
+                    <td th:text="${#temporals.format(m.expiryDate, 'dd-MM-yyyy')}"></td>
+                    <td>
+                        <span th:if="${m.expired}" class="badge expired">Expired</span>
+                        <span th:unless="${m.expired}" class="badge soon">Expiring soon</span>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="page-head"><h2>Recent Sales</h2><a class="btn btn-sm" th:href="@{/billing}">+ New Bill</a></div>
+        <p th:if="${#lists.isEmpty(recentSales)}" class="muted">No sales yet.</p>
+        <table th:unless="${#lists.isEmpty(recentSales)}">
+            <tr><th>Invoice</th><th>Customer</th><th>Date</th><th class="right">Amount</th></tr>
+            <tr th:each="s : ${recentSales}">
+                <td><a th:href="@{/sales/{id}(id=${s.id})}" th:text="${s.invoiceNumber}"></a></td>
+                <td th:text="${s.customerName}"></td>
+                <td th:text="${#temporals.format(s.saleDate, 'dd-MM-yyyy HH:mm')}"></td>
+                <td class="right" th:text="'₹' + ${#numbers.formatDecimal(s.totalAmount, 1, 'COMMA', 2, 'POINT')}"></td>
+            </tr>
+        </table>
+    </div>
+</main>
+</body>
+</html>

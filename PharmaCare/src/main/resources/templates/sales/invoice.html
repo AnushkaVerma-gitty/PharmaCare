@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Invoice')}"></head>
+<body>
+<aside th:replace="~{fragments/layout :: sidebar}"></aside>
+<main>
+    <div class="no-print" th:insert="~{fragments/layout :: alerts}"></div>
+    <div class="page-head no-print">
+        <h1>Invoice</h1>
+        <div class="actions">
+            <button class="btn" onclick="window.print()">🖨 Print</button>
+            <a class="btn btn-secondary" th:href="@{/billing}">New Bill</a>
+            <a class="btn btn-secondary" th:href="@{/sales}">Back to Sales</a>
+        </div>
+    </div>
+
+    <div class="card invoice">
+        <div class="invoice-head">
+            <div>
+                <h2 style="margin:0">💊 PharmaCare Pharmacy</h2>
+                <div class="muted">Tax Invoice</div>
+            </div>
+            <div class="right">
+                <div><strong th:text="${sale.invoiceNumber}"></strong></div>
+                <div class="muted" th:text="${#temporals.format(sale.saleDate, 'dd-MM-yyyy HH:mm')}"></div>
+            </div>
+        </div>
+
+        <p>
+            <strong>Customer:</strong> <span th:text="${sale.customerName}"></span>
+            <span th:if="${sale.customerPhone}" th:text="' | ' + ${sale.customerPhone}"></span><br>
+            <strong>Payment:</strong> <span th:text="${sale.paymentMode}"></span>
+        </p>
+
+        <table>
+            <tr><th>#</th><th>Medicine</th><th class="right">Qty</th><th class="right">Rate</th><th class="right">Amount</th></tr>
+            <tr th:each="item, st : ${sale.items}">
+                <td th:text="${st.count}"></td>
+                <td th:text="${item.medicineName}"></td>
+                <td class="right" th:text="${item.quantity}"></td>
+                <td class="right" th:text="'₹' + ${#numbers.formatDecimal(item.unitPrice, 1, 2)}"></td>
+                <td class="right" th:text="'₹' + ${#numbers.formatDecimal(item.lineTotal, 1, 2)}"></td>
+            </tr>
+        </table>
+
+        <div style="max-width:300px; margin-left:auto; margin-top:16px">
+            <div class="summary-row"><span>Subtotal</span><span th:text="'₹' + ${#numbers.formatDecimal(sale.subTotal, 1, 2)}"></span></div>
+            <div class="summary-row"><span th:text="'Discount (' + ${sale.discountPercent} + '%)'"></span><span th:text="'- ₹' + ${#numbers.formatDecimal(sale.discountAmount, 1, 2)}"></span></div>
+            <div class="summary-row"><span th:text="'GST (' + ${sale.gstPercent} + '%)'"></span><span th:text="'+ ₹' + ${#numbers.formatDecimal(sale.gstAmount, 1, 2)}"></span></div>
+            <hr>
+            <div class="summary-row"><strong>Grand Total</strong><span class="bill-total" th:text="'₹' + ${#numbers.formatDecimal(sale.totalAmount, 1, 'COMMA', 2, 'POINT')}"></span></div>
+        </div>
+        <p class="muted" style="text-align:center; margin-top:24px">Thank you! Get well soon.</p>
+    </div>
+</main>
+</body>
+</html>

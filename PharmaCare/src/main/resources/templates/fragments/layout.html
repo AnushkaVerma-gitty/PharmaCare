@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<!-- Shared pieces used by every page: <head>, sidebar menu, and success/error messages -->
+
+<head th:fragment="head(title)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${title} + ' | PharmaCare'">PharmaCare</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+<aside th:fragment="sidebar" class="sidebar">
+    <div class="brand">💊 PharmaCare</div>
+    <nav>
+        <a th:href="@{/}" th:classappend="${active == 'dashboard'} ? 'active'">Dashboard</a>
+        <a th:href="@{/medicines}" th:classappend="${active == 'medicines'} ? 'active'">Medicines</a>
+        <a th:href="@{/stock}" th:classappend="${active == 'stock'} ? 'active'">Stock</a>
+        <a th:href="@{/billing}" th:classappend="${active == 'billing'} ? 'active'">Billing</a>
+        <a th:href="@{/sales}" th:classappend="${active == 'sales'} ? 'active'">Sales History</a>
+        <a th:href="@{/suppliers}" th:classappend="${active == 'suppliers'} ? 'active'">Suppliers</a>
+    </nav>
+</aside>
+
+<div th:fragment="alerts">
+    <div th:if="${success}" class="alert success" th:text="${success}"></div>
+    <div th:if="${error}" class="alert error" th:text="${error}"></div>
+</div>
+</body>
+</html>

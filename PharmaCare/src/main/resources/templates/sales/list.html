@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Sales History')}"></head>
+<body>
+<aside th:replace="~{fragments/layout :: sidebar}"></aside>
+<main>
+    <h1>Sales History</h1>
+
+    <div class="card">
+        <form class="inline-form" th:action="@{/sales}" method="get">
+            <label style="margin:0">From</label>
+            <input type="date" name="from" th:value="${from}">
+            <label style="margin:0">To</label>
+            <input type="date" name="to" th:value="${to}">
+            <button class="btn" type="submit">Filter</button>
+            <a class="btn btn-secondary" th:href="@{/sales}">Show All</a>
+        </form>
+    </div>
+
+    <div class="grid grid-4">
+        <div class="card stat"><div class="label">Bills</div><div class="value" th:text="${#lists.size(sales)}">0</div></div>
+        <div class="card stat"><div class="label">Total Revenue</div>
+            <div class="value" th:text="'₹' + ${#numbers.formatDecimal(totalRevenue, 1, 'COMMA', 2, 'POINT')}">₹0</div></div>
+    </div>
+
+    <div class="card">
+        <p th:if="${#lists.isEmpty(sales)}" class="muted">No sales found.</p>
+        <table th:unless="${#lists.isEmpty(sales)}">
+            <tr><th>Invoice</th><th>Date</th><th>Customer</th><th>Phone</th><th class="right">Items</th><th>Payment</th><th class="right">Amount</th><th></th></tr>
+            <tr th:each="s : ${sales}">
+                <td th:text="${s.invoiceNumber}"></td>
+                <td th:text="${#temporals.format(s.saleDate, 'dd-MM-yyyy HH:mm')}"></td>
+                <td th:text="${s.customerName}"></td>
+                <td th:text="${s.customerPhone}"></td>
+                <td class="right" th:text="${#lists.size(s.items)}"></td>
+                <td th:text="${s.paymentMode}"></td>
+                <td class="right" th:text="'₹' + ${#numbers.formatDecimal(s.totalAmount, 1, 'COMMA', 2, 'POINT')}"></td>
+                <td><a class="btn btn-sm btn-secondary" th:href="@{/sales/{id}(id=${s.id})}">View</a></td>
+            </tr>
+        </table>
+    </div>
+</main>
+</body>
+</html>

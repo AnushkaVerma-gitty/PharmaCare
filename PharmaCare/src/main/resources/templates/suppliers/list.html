@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Suppliers')}"></head>
+<body>
+<aside th:replace="~{fragments/layout :: sidebar}"></aside>
+<main>
+    <div class="page-head">
+        <h1>Suppliers</h1>
+        <a class="btn" th:href="@{/suppliers/new}">+ Add Supplier</a>
+    </div>
+    <div th:replace="~{fragments/layout :: alerts}"></div>
+
+    <div class="card">
+        <form class="inline-form" th:action="@{/suppliers}" method="get">
+            <input type="text" name="keyword" th:value="${keyword}" placeholder="Search supplier name..." style="min-width:280px">
+            <button class="btn" type="submit">Search</button>
+            <a class="btn btn-secondary" th:href="@{/suppliers}">Clear</a>
+        </form>
+    </div>
+
+    <div class="card">
+        <p th:if="${#lists.isEmpty(suppliers)}" class="muted">No suppliers found.</p>
+        <table th:unless="${#lists.isEmpty(suppliers)}">
+            <tr><th>Name</th><th>Contact Person</th><th>Phone</th><th>Email</th><th>Address</th><th>GST No.</th><th>Actions</th></tr>
+            <tr th:each="s : ${suppliers}">
+                <td><strong th:text="${s.name}"></strong></td>
+                <td th:text="${s.contactPerson}"></td>
+                <td th:text="${s.phone}"></td>
+                <td th:text="${s.email}"></td>
+                <td th:text="${s.address}"></td>
+                <td th:text="${s.gstNumber}"></td>
+                <td class="actions">
+                    <a class="btn btn-sm btn-secondary" th:href="@{/suppliers/edit/{id}(id=${s.id})}">Edit</a>
+                    <form th:action="@{/suppliers/delete/{id}(id=${s.id})}" method="post"
+                          onsubmit="return confirm('Delete this supplier?');">
+                        <button class="btn btn-sm btn-danger" type="submit">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        </table>
+    </div>
+</main>
+</body>
+</html>
